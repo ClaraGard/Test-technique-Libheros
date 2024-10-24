@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "clara",
+    "password": "clara",
+    "database": "database_development",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "clara",
+    "password": "clara",
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "clara",
+    "password": "clara",
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}
