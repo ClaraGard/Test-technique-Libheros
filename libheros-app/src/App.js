@@ -4,6 +4,7 @@ import LoginPage from './loginPage';
 import MainPage from './mainPage';
 
 function App() {
+  require('dotenv').config();
   return (
     <Router>
       <Routes>
