@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 
 module.exports = {
   development: {
@@ -8,6 +8,5 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'postgres',
   },
-  // You can add configurations for other environments like production here
 };
 
