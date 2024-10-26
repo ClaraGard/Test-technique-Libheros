@@ -1,6 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
     const Task = sequelize.define('Task', {
-      shortDescription: DataTypes.STRING,
+      shortDescription: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
       longDescription: DataTypes.TEXT,
       completed: {
         type: DataTypes.BOOLEAN,

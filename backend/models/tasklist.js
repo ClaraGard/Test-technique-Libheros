@@ -2,7 +2,8 @@ module.exports = (sequelize, DataTypes) => {
     const TaskList = sequelize.define('TaskList', {
       name: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
       }
     }, {});
     
