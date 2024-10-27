@@ -1,148 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Correct import for jwt-decode
-import styled from 'styled-components';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
-import { createGlobalStyle } from 'styled-components';
-
-const GlobalStyle = createGlobalStyle`
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  #root {
-    height: 100%;
-  }
-`;
-// Styled components for layout
-const PageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-`;
-
-const Container = styled.div`
-  display: flex;
-  flex: 1;
-`;
-
-const Sidebar = styled.div`
-  width: 250px;
-  background-color: #f4f4f4;
-  padding: 20px;
-  border-right: 1px solid #ccc;
-`;
-
-const Content = styled.div`
-  flex: 1;
-  padding: 20px;
-`;
-
-const TaskDetails = styled.div`
-  width: 300px;
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-left: 1px solid #ccc;
-`;
-
-const Button = styled.button`
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin-bottom: 10px;
-`;
-
-const TaskList = styled.li`
-  list-style: none;
-  padding: 10px;
-  margin: 10px 0;
-  background-color: ${props => props.selected ? '#b0d0ff' : '#e0e0e0'};  // Different color for selected task
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  border: ${props => props.selected ? '2px solid #007bff' : 'none'};  // Add border for selected task
-
-  &:hover {
-    background-color: ${props => props.selected ? '#a0c0ee' : '#d0d0d0'};  // Hover effect changes depending on selection
-    transform: scale(1.02);
-  }
-`;
-
-const TaskForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin-bottom: 10px;
-`;
-
-const AddTaskButton = styled(Button)`
-  margin-top: 10px;
-`;
-
-const TaskItem = styled.li`
-  list-style: none;
-  padding: 10px;
-  margin: 10px 0;
-  background-color: ${props => props.selected ? '#b0d0ff' : '#e0e0e0'};  // Different color for selected task
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  border: ${props => props.selected ? '2px solid #007bff' : 'none'};  // Add border for selected task
-
-  &:hover {
-    background-color: ${props => props.selected ? '#a0c0ee' : '#d0d0d0'};  // Hover effect changes depending on selection
-    transform: scale(1.02);
-  }
-`;
-
-const Navbar = styled.div`
-  background-color: #333;
-  color: white;
-  padding: 10px;
-  text-align: center;
-  position: relative; /* Important to make the logout button position relative to the navbar */
-  display: flex;
-  align-items: center; /* Center text vertically */
-  height: 60px; /* You can adjust this height as needed */
-`;
-
-const LogoutButton = styled(Button)`
-  position: absolute;
-  right: 20px; /* Adjust the distance from the right edge */
-  top: 50%; /* Place it halfway down */
-  transform: translateY(-50%); /* Adjust the position to center it vertically */
-  padding: 10px 20px;
-`;
+import * as Styles from './mainPageStyles';
 
 const backendUrl = `${process.env.REACT_APP_BACKEND_URL}:${process.env.REACT_APP_BACKEND_PORT}`;
 
@@ -167,6 +27,8 @@ function MainPage() {
 
   const [newTask, setNewTask] = useState({ shortDescription: '', longDescription: '', dueDate: '' }); 
   const [showTaskForm, setShowTaskForm] = useState(false); 
+
+  const [showCompleted, setShowCompleted] = useState(false); // To track if completed tasks are shown
 
   const navigate = useNavigate();
 
@@ -218,6 +80,7 @@ function MainPage() {
   };
 
   const handleSelectTaskList = (list, index) => {
+    console.log(selectedTaskListIndex);
     if (selectedTaskListIndex === index) return;
     setSelectedTaskList(list);
     setSelectedTaskListIndex(index);
@@ -249,14 +112,66 @@ function MainPage() {
       return;
     }
     if (selectedTaskList) {
+      const updatedTasks = [...tasks, newTask]; // Spread to append task, not overwrite
       const updatedTaskList = { ...selectedTaskList, tasks: [...selectedTaskList.tasks, newTask] };
   
       setTaskLists(taskLists.map(list =>
         list === selectedTaskList ? updatedTaskList : list
       ));
-      setTasks(updatedTaskList.tasks);
+      setTasks(updatedTasks);
       setNewTask({ shortDescription: '', longDescription: '', dueDate: '' });
       setShowTaskForm(false);
+    }
+  };
+
+  const handleCompleteTask = (task) => {
+    const updatedTask = { ...task, completed: !task.completed };
+  
+    const updatedTasks = tasks.map((t) =>
+      t === task ? updatedTask : t
+    );
+  
+    const updatedTaskList = { ...selectedTaskList, tasks: updatedTasks };
+    setTaskLists(taskLists.map(list =>
+      list === selectedTaskList ? updatedTaskList : list
+    ));
+  
+    setTasks(updatedTasks);
+    };
+  
+
+  const handleDeleteTask = () => {
+    const confirmed = window.confirm("Are you sure you want to delete this task?");
+    if (confirmed) {
+      const updatedTasks = tasks.filter((task) => task !== selectedTask);
+      setTasks(updatedTasks);
+  
+      const updatedTaskList = { ...selectedTaskList, tasks: updatedTasks };
+      setTaskLists(taskLists.map(list =>
+        list === selectedTaskList ? updatedTaskList : list
+      ));
+      setSelectedTask(null);
+      setSelectedTaskIndex(null);
+    }
+  };
+
+  const handleDeleteTaskList = () => {
+    if (!selectedTaskList) return; 
+  
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the task list "${selectedTaskList.name}" and all its tasks?`
+    );
+  
+    if (confirmed) {
+      const updatedTaskLists = taskLists.filter((list) => list !== selectedTaskList);
+  
+      setTaskLists(updatedTaskLists);
+  
+      setSelectedTaskList(null);
+      setSelectedTaskListIndex(null);
+      setSelectedTaskIndex(null);
+      setSelectedTask(null);
+      setTasks([]);
     }
   };
 
@@ -266,38 +181,38 @@ function MainPage() {
   };
 
   return (
-    <PageWrapper>
-      <GlobalStyle />
+    <Styles.PageWrapper>
+      <Styles.GlobalStyle />
       {/* Top Navbar */}
-      <Navbar>
+      <Styles.Navbar>
         <h2>Hello, {username ? username : "Guest"}!</h2>
-        <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
-      </Navbar>
+        <Styles.LogoutButton onClick={handleLogout}>Logout</Styles.LogoutButton>
+      </Styles.Navbar>
 
-      <Container>
+      <Styles.Container>
         {/* Left Sidebar: Task Lists */}
-        <Sidebar>
+        <Styles.Sidebar>
           <h2>Task Lists</h2>
-          <Input
+          <Styles.Input
             type="text"
             placeholder="New Task List"
             value={newTaskListName}
             onChange={(e) => setNewTaskListName(e.target.value)}
           />
-          <Button onClick={handleAddTaskList}>Add Task List</Button>
+          <Styles.Button onClick={handleAddTaskList}>Add Task List</Styles.Button>
 
           <ul>
             {taskLists.map((list, index) => (
-              <TaskList key={index} onClick={() => handleSelectTaskList(list, index)}
+              <Styles.TaskList key={index} onClick={() => handleSelectTaskList(list, index)}
               selected={selectedTaskListIndex === index}>
                 {list.name}
-              </TaskList>
+              </Styles.TaskList>
             ))}
           </ul>
-        </Sidebar>
+        </Styles.Sidebar>
 
         {/* Main Content: Task List Tasks */}
-        <Content>
+        <Styles.Content>
           <h2>{selectedTaskList ? selectedTaskList.name : 'Select a Task List'}</h2>
 
           {selectedTaskList ? (
@@ -305,16 +220,25 @@ function MainPage() {
               <h3>Tasks</h3>
               {tasks.length > 0 ? (
                 <ul>
-                  {tasks.map((task, index) => (
-                    <TaskItem key={index} 
-                    onClick={() => {
-                      handleSelectTask(task, index);
-                    }}
-                    selected={selectedTaskIndex === index}>
-                    {task.shortDescription} - {formatDate(task.dueDate)}
-                  </TaskItem>
+                {tasks
+                  .filter(task => !task.completed || showCompleted) // Show only incomplete or all based on toggle
+                  .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)) // Sort tasks by due date
+                  .map((task, index) => (
+                    <Styles.TaskItem 
+                      key={index} 
+                      onClick={() => handleSelectTask(task, index)}
+                      selected={selectedTaskIndex === index}>
+                      {task.shortDescription} - {formatDate(task.dueDate)} - {task.completed ? 'Completed' : 'Not Completed'}
+                      <Styles.Button onClick={(e) => {
+                        e.stopPropagation();
+                        handleCompleteTask(task, index);
+                        }
+                      }>
+                        {task.completed ? 'Mark as Incomplete' : 'Mark as Completed'}
+                      </Styles.Button>
+                    </Styles.TaskItem>
                   ))}
-                </ul>
+              </ul>
               ) : (
                 <p>No tasks in this list.</p>
               )}
@@ -325,51 +249,59 @@ function MainPage() {
           {selectedTaskList && (
             <>
               {/* Button to show/hide task form */}
-              <AddTaskButton onClick={() => setShowTaskForm(!showTaskForm)}>
+              <Styles.AddTaskButton onClick={() => setShowTaskForm(!showTaskForm)}>
                 {showTaskForm ? 'Cancel' : 'Add Task'}
-              </AddTaskButton>
-
+              </Styles.AddTaskButton>
+              {/* Button to show/hide completed tasks */}
+              <Styles.Button onClick={() => setShowCompleted(!showCompleted)}>
+                {showCompleted ? 'Hide Completed Tasks' : 'Show Completed Tasks'}
+              </Styles.Button>
+              <Styles.Button onClick={handleDeleteTaskList} style={{ marginTop: '10px', backgroundColor: 'red' }}>
+                Delete Task List
+              </Styles.Button>
               {/* Task Form */}
               {showTaskForm && (
-                <TaskForm onSubmit={handleAddTask}>
-                  <Input
+                <Styles.TaskForm onSubmit={handleAddTask}>
+                  <Styles.Input
                     type="text"
                     placeholder="Short Description"
                     value={newTask.shortDescription}
                     onChange={(e) => setNewTask({ ...newTask, shortDescription: e.target.value })}
                     required
                   />
-                  <TextArea
+                  <Styles.TextArea
                     placeholder="Long Description"
                     value={newTask.longDescription}
                     onChange={(e) => setNewTask({ ...newTask, longDescription: e.target.value })}
                   />
                   <label htmlFor="dueDate">Due Date:</label>
-                  <Input
+                  <Styles.Input
                     type="date"
                     value={newTask.dueDate}
                     onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
                     required
                   />
-                  <Button type="submit">Add Task</Button>
-                </TaskForm>
+                  <Styles.Button type="submit">Add Task</Styles.Button>
+                </Styles.TaskForm>
               )}
             </>
           )}
-        </Content>
+        </Styles.Content>
 
         {/* Right Sidebar: Task Details */}
         {selectedTask && (
-          <TaskDetails>
+          <Styles.TaskDetails>
             <h3>Task Details</h3>
             <p><strong>Short Description:</strong> {selectedTask.shortDescription}</p>
             <p><strong>Long Description:</strong> {selectedTask.longDescription}</p>
             <p><strong>Due Date:</strong> {formatDate(selectedTask.dueDate)}</p>
             <p><strong>Completed:</strong> {selectedTask.completed ? 'Yes' : 'No'}</p>
-          </TaskDetails>
+            {/* Delete Task Button */}
+            <Styles.Button onClick={handleDeleteTask}>Delete Task</Styles.Button>
+          </Styles.TaskDetails>
         )}
-      </Container>
-    </PageWrapper>
+      </Styles.Container>
+    </Styles.PageWrapper>
   );
 }
 
