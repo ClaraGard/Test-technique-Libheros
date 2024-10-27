@@ -53,6 +53,7 @@ function LoginPage() {
   const [passwordLogin, setPasswordLogin] = useState('');
   const [passwordRegister, setPasswordRegister] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [usernameRegister, setUsernameRegister] = useState('');
   const [validation, setValidation] = useState({
     hasUpperCase: false,
     hasLowerCase: false,
@@ -71,6 +72,7 @@ function LoginPage() {
       });
 
       if (response.data.success) {
+        localStorage.removeItem('token');
         localStorage.setItem('token', response.data.token);
         navigate('/main');
       } else {
@@ -102,10 +104,11 @@ function LoginPage() {
       const response = await axios.post(`${backendUrl}/auth/register`, {
         email: emailRegister,
         password: passwordRegister,
-        name: "User Name" // TO DO
+        name: usernameRegister
       });
   
       if (response.data.success) {
+        localStorage.removeItem('token');
         localStorage.setItem('token', response.data.token);
         navigate('/main');
       } else {
@@ -149,6 +152,15 @@ function LoginPage() {
       <Section type="register">
         <h2>Register</h2>
         <Form onSubmit={handleRegister}>
+        <div>
+          <label>Username:</label>
+          <Input
+            type="text"
+            value={usernameRegister}
+            onChange={(e) => setUsernameRegister(e.target.value)}
+            required
+          />
+        </div>
           <div>
             <label>Email:</label>
             <Input

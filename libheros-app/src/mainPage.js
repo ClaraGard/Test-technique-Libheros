@@ -29,13 +29,6 @@ const PageWrapper = styled.div`
   height: 100vh;
 `;
 
-const Navbar = styled.div`
-  background-color: #333;
-  color: white;
-  padding: 10px;
-  text-align: center;
-`;
-
 const Container = styled.div`
   display: flex;
   flex: 1;
@@ -132,6 +125,25 @@ const TaskItem = styled.li`
   }
 `;
 
+const Navbar = styled.div`
+  background-color: #333;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  position: relative; /* Important to make the logout button position relative to the navbar */
+  display: flex;
+  align-items: center; /* Center text vertically */
+  height: 60px; /* You can adjust this height as needed */
+`;
+
+const LogoutButton = styled(Button)`
+  position: absolute;
+  right: 20px; /* Adjust the distance from the right edge */
+  top: 50%; /* Place it halfway down */
+  transform: translateY(-50%); /* Adjust the position to center it vertically */
+  padding: 10px 20px;
+`;
+
 const backendUrl = `${process.env.REACT_APP_BACKEND_URL}:${process.env.REACT_APP_BACKEND_PORT}`;
 
 const formatDate = (dateString) => {
@@ -165,11 +177,9 @@ function MainPage() {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      
-      // Axios automatically parses the response data as JSON
-      const data = response.data;  // No need for .json() method
-      console.log(data);
-      setUsername(data.name); // Make sure that `data.name` exists in your backend response
+  
+      const data = response.data; // Axios automatically parses the response
+      setUsername(data.name); // Ensure 'name' exists in the response
     } catch (error) {
       console.error('Error fetching username:', error);
     }
@@ -184,7 +194,7 @@ function MainPage() {
           localStorage.removeItem("token");
           navigate("/login");
         } else {
-          fetchUsername(decodedToken.sub);
+          fetchUsername();
         }
       } catch (error) {
         console.error("Error decoding token:", error);
@@ -250,12 +260,18 @@ function MainPage() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
   return (
     <PageWrapper>
       <GlobalStyle />
       {/* Top Navbar */}
       <Navbar>
         <h2>Hello, {username ? username : "Guest"}!</h2>
+        <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
       </Navbar>
 
       <Container>
