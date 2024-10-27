@@ -17,9 +17,9 @@ export class UserService {
     return await this.userRepository.save(newUser);
   }
 
-  async updateToken(userId: number, token: string): Promise<void> {
+  /*async updateToken(userId: number, token: string): Promise<void> {
     await this.userRepository.update(userId, { token });
-  }
+  }*/
 
   findAll() {
     return `This action returns all user`;
