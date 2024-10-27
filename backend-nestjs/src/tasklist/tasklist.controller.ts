@@ -1,22 +1,25 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
-import { TasklistService } from './tasklist.service';
+import { Controller, Get, Param, UseGuards, Req, NotFoundException } from '@nestjs/common';
+import { TaskListService } from './tasklist.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@Controller('tasklists')
-export class TasklistController {
-  constructor(private readonly tasklistsService: TasklistService) {}
+@Controller('tasklist')
+@UseGuards(JwtAuthGuard)
+export class TaskListController {
+  constructor(private readonly taskListService: TaskListService) {}
 
   @Get()
-  getAllTaskLists() {
-    return this.tasklistsService.getAllTaskLists();
+  async getUserTaskLists(@Req() req) {
+    return this.taskListService.getTaskListsForUser(req.user.userId);
   }
 
-  @Post()
-  createTaskList(@Body() createTaskListDto) {
-    return this.tasklistsService.createTaskList(createTaskListDto);
-  }
+  @Get(':id')
+  async getTaskListById(@Param('id') id: number, @Req() req) {
+    const taskList = await this.taskListService.getTaskListById(id);
 
-  @Delete(':id')
-  deleteTaskList(@Param('id') id: string) {
-    return this.tasklistsService.deleteTaskList(id);
+    if (taskList && taskList.user.id === req.user.userId) {
+      return taskList;
+    } else {
+      throw new NotFoundException('Task List not found or access denied');
+    }
   }
 }

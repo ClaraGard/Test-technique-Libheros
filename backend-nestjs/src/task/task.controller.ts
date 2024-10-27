@@ -1,27 +1,22 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { TaskService } from './task.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Task } from 'src/entities/task.entity';
 
-@Controller('tasks')
+@Controller('task')
+@UseGuards(JwtAuthGuard)
 export class TaskController {
-  constructor(private readonly tasksService: TaskService) {}
+  constructor(private readonly taskService: TaskService) {}
 
-  @Get(':taskListId')
-  getTasks(@Param('taskListId') taskListId: string) {
-    return this.tasksService.getTasksForList(taskListId);
+  @Get('tasklist/:taskListId')
+  async findTasksByTaskList(@Param('taskListId') taskListId: string, @Req() req): Promise<Task[]> {
+    const userId = req.user.userId; 
+    return this.taskService.findAllForTaskList(+taskListId, userId);
   }
 
-  @Post(':taskListId')
-  createTask(@Param('taskListId') taskListId: string, @Body() createTaskDto) {
-    return this.tasksService.createTask(taskListId, createTaskDto);
-  }
-
-  @Put(':id')
-  updateTask(@Param('id') id: string, @Body() updateTaskDto) {
-    return this.tasksService.updateTask(id, updateTaskDto);
-  }
-
-  @Delete(':id')
-  deleteTask(@Param('id') id: string) {
-    return this.tasksService.deleteTask(id);
+  @Get(':taskId')
+  async findOne(@Param('taskId') taskId: string, @Req() req): Promise<Task> {
+    const userId = req.user.userId;
+    return this.taskService.findOneForUser(+taskId, userId);
   }
 }

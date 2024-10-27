@@ -1,21 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { TaskList } from '../entities/tasklist.entity';
 
 @Injectable()
-export class TasklistService {
-  private taskLists = [];
+export class TaskListService {
+  constructor(
+    @InjectRepository(TaskList)
+    private readonly taskListRepository: Repository<TaskList>,
+  ) {}
 
-  getAllTaskLists() {
-    return this.taskLists;
+  async getTaskListsForUser(userId: number): Promise<TaskList[]> {
+    return this.taskListRepository.find({ where: { user: { id: userId } } });
   }
 
-  createTaskList(createTaskListDto) {
-    const newTaskList = { id: Date.now(), ...createTaskListDto };
-    this.taskLists.push(newTaskList);
-    return newTaskList;
-  }
+  async getTaskListById(id: number): Promise<TaskList> {
+    const taskList = await this.taskListRepository.findOne({ where: { id }, relations: ['user'] });
 
-  deleteTaskList(id: string) {
-    this.taskLists = this.taskLists.filter((taskList) => taskList.id !== +id);
-    return { deleted: true };
+    if (!taskList) {
+      throw new NotFoundException('Task List not found');
+    }
+    return taskList;
   }
 }

@@ -1,29 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Task } from 'src/entities/task.entity';
+import { TaskList } from 'src/entities/tasklist.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TaskService {
-  private tasks = [];
+  constructor(
+    @InjectRepository(Task)
+    private tasksRepository: Repository<Task>,
+    @InjectRepository(TaskList)
+    private taskListRepository: Repository<TaskList>,
+  ) {}
 
-  getTasksForList(taskListId: string) {
-    return this.tasks.filter((task) => task.taskListId === taskListId);
-  }
+  async findAllForTaskList(taskListId: number, userId: number): Promise<Task[]> {
+    const taskList = await this.taskListRepository.findOne({
+      where: { id: taskListId, user: { id: userId } },
+    });
 
-  createTask(taskListId: string, createTaskDto) {
-    const newTask = { id: Date.now(), taskListId, ...createTaskDto };
-    this.tasks.push(newTask);
-    return newTask;
-  }
-
-  updateTask(id: string, updateTaskDto) {
-    const taskIndex = this.tasks.findIndex((task) => task.id === +id);
-    if (taskIndex > -1) {
-      this.tasks[taskIndex] = { ...this.tasks[taskIndex], ...updateTaskDto };
-      return this.tasks[taskIndex];
+    if (!taskList) {
+      throw new UnauthorizedException('You do not have access to this task list.');
     }
+
+    return this.tasksRepository.find({
+      where: { taskList: { id: taskListId } },
+    });
   }
 
-  deleteTask(id: string) {
-    this.tasks = this.tasks.filter((task) => task.id !== +id);
-    return { deleted: true };
+  async findOneForUser(taskId: number, userId: number): Promise<Task> {
+    const task = await this.tasksRepository.findOne({
+      where: { id: taskId },
+      relations: ['taskList'],
+    });
+
+    if (!task || task.taskList.user.id !== userId) {
+      throw new UnauthorizedException('You do not have access to this task.');
+    }
+
+    return task;
   }
 }
