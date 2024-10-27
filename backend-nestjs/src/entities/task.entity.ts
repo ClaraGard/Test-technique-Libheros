@@ -12,6 +12,9 @@ export class Task {
   @Column({type: "text"})
   longDescription: string;
 
+  @Column({default: false})
+  isCompleted: boolean
+
   @Index()
   @ManyToOne(() => TaskList, tasklist => tasklist.tasks, { onDelete: 'CASCADE' })
   taskList: TaskList;

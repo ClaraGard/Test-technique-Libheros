@@ -4,11 +4,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { dataSourceOption } from 'db/data-source';
-import { User } from './user/entities/user.entity';
-import { TaskList } from './user/entities/tasklist.entity';
-import { Task } from './user/entities/task.entity';
+import { User } from './entities/user.entity';
+import { TaskList } from './entities/tasklist.entity';
+import { Task } from './entities/task.entity';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { TasklistModule } from './tasklist/tasklist.module';
+import { TaskModule } from './task/task.module';
 
 
 @Module({
@@ -18,6 +20,8 @@ import { ConfigModule } from '@nestjs/config';
     }),
     TypeOrmModule.forRoot(dataSourceOption),
     UserModule,
+    TasklistModule,
+    TaskModule,
     TypeOrmModule.forFeature([User, TaskList, Task]),
     AuthModule,
   ],
