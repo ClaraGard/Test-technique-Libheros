@@ -14,7 +14,7 @@ export const dataSourceOption: DataSourceOptions = {
   synchronize: false, // Don't use synchronize in production!
   logging: false,
   entities: ["dist/src/**/*.entity.js"],
-  migrations: ["dst/db/migrations/*.js"],
+  migrations: ["dist/db/migrations/*.js"],
   subscribers: [],
 };
 const dataSource = new DataSource(dataSourceOption);
