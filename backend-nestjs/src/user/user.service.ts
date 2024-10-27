@@ -21,21 +21,14 @@ export class UserService {
     await this.userRepository.update(userId, { token });
   }*/
 
-  findAll() {
-    return `This action returns all user`;
+
+  async findOne(id: number): Promise<User> {
+    return await this.userRepository.findOne({ 
+      where: { id },
+      select: ["email", "name"]
+    }); 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
   async findByEmail(email: string): Promise<User | undefined> {
     return this.userRepository.findOne({ where: { email } });
   }
