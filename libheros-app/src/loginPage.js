@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PasswordValidator from './components/passwordValidator';
 import styled from 'styled-components';
+import axios from 'axios';
 
 const SplitLayout = styled.div`
   display: flex;
@@ -43,10 +44,14 @@ const Button = styled.button`
   }
 `;
 
+const backendUrl = `${process.env.REACT_APP_BACKEND_URL}:${process.env.REACT_APP_BACKEND_PORT}`;
+
 function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [emailLogin, setEmailLogin] = useState('');
+  const [emailRegister, setEmailRegister] = useState('');
   const [emailConfirm, setEmailConfirm] = useState('');
-  const [password, setPassword] = useState('');
+  const [passwordLogin, setPasswordLogin] = useState('');
+  const [passwordRegister, setPasswordRegister] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [validation, setValidation] = useState({
     hasUpperCase: false,
@@ -57,18 +62,34 @@ function LoginPage() {
   });
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    navigate('/main');
+    try {
+      const response = await axios.post(`${backendUrl}/auth/login`, {
+        email: emailLogin,
+        password: passwordLogin,
+      });
+
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        navigate('/main');
+      } else {
+        alert(response.data.message);
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert('Login failed. This is something on our end, contact the support.');
+    }
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (email !== emailConfirm) {
+    if (emailRegister !== emailConfirm) {
       alert('Emails do not match!');
       return;
     }
-    if (password !== passwordConfirm) {
+    if (passwordRegister !== passwordConfirm) {
       alert('Passwords do not match!');
       return;
     }
@@ -77,7 +98,23 @@ function LoginPage() {
       return;
     }
     
-    navigate('/main');
+    try {
+      const response = await axios.post(`${backendUrl}/auth/register`, {
+        email: emailRegister,
+        password: passwordRegister,
+        name: "User Name" // TO DO
+      });
+  
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        navigate('/main');
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Registration failed. This is something on our end, contact the support.');
+    }
   };
 
   return (
@@ -90,8 +127,8 @@ function LoginPage() {
             <label>Email:</label>
             <Input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={emailLogin}
+              onChange={(e) => setEmailLogin(e.target.value)}
               required
             />
           </div>
@@ -99,8 +136,8 @@ function LoginPage() {
             <label>Password:</label>
             <Input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={passwordLogin}
+              onChange={(e) => setPasswordLogin(e.target.value)}
               required
             />
           </div>
@@ -116,8 +153,8 @@ function LoginPage() {
             <label>Email:</label>
             <Input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={emailRegister}
+              onChange={(e) => setEmailRegister(e.target.value)}
               required
             />
           </div>
@@ -133,8 +170,8 @@ function LoginPage() {
           <div>
             <label>Password:</label>
             <PasswordValidator
-              password={password}
-              onPasswordChange={setPassword}
+              password={passwordRegister}
+              onPasswordChange={setPasswordRegister}
               setValidation={setValidation}
             />
           </div>

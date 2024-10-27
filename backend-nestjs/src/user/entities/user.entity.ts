@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { TaskList } from './tasklist.entity';
 
-@Entity()
+@Entity("users")
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -15,7 +15,7 @@ export class User {
   @Column({ type: "varchar", length: 255 })
   password: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'text', nullable: true })
   token: string;
 
   @OneToMany(() => TaskList, taskList => taskList.user)
