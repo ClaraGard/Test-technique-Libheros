@@ -276,6 +276,37 @@ function MainPage() {
     }
   };
 
+  const handleDeleteTaskListFromLeftSidebar = async (taskListId) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete this task list?`
+    );
+    if (!confirmed) return;
+  
+    try {
+      const response = await axios.delete(`${backendUrl}/tasklist/${taskListId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (response.data.success) {
+        const updatedTaskLists = taskLists.filter(list => list.id !== taskListId);
+        setTaskLists(updatedTaskLists);
+  
+        if (selectedTaskList && selectedTaskList.id === taskListId) {
+          setSelectedTaskList(null);
+          setSelectedTaskListIndex(null);
+          setSelectedTask(null);
+          setSelectedTaskIndex(null);
+          setTasks([]);
+        }
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting task list:", error);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -307,9 +338,19 @@ function MainPage() {
               <Styles.Button onClick={handleAddTaskList}>Add Task List</Styles.Button>
               <ul>
                 {taskLists.map((list, index) => (
-                  <Styles.TaskList key={index} onClick={() => handleSelectTaskList(list, index)}>
-                    {list.name}
-                  </Styles.TaskList>
+                  <Styles.TaskList
+                    key={index}
+                    selected={selectedTaskListIndex === index}
+                    onClick={() => handleSelectTaskList(list, index)}
+                  >
+                  {list.name}
+                  <Styles.DeleteTaskListButtonLeft onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTaskListFromLeftSidebar(list.id);
+                  }}>
+                    ×
+                  </Styles.DeleteTaskListButtonLeft>
+                </Styles.TaskList>
                 ))}
               </ul>
             </>

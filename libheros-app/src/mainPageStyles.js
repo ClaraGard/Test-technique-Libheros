@@ -156,3 +156,16 @@ export const LogoutButton = styled(Button)`
   transform: translateY(-50%); /* Adjust the position to center it vertically */
   padding: 10px 20px;
 `;
+
+export const DeleteTaskListButtonLeft = styled.button`
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 8px;
+
+  &:hover {
+    color: #ff4d4d;
+  }
+`;
