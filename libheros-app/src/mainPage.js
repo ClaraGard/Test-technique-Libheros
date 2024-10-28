@@ -206,7 +206,7 @@ function MainPage() {
       if (response.data.success) {
         const updatedTasks = tasks.map((t) => (t.id === task.id ? response.data.task : t));
         setTasks(updatedTasks); 
-        if (selectedTask.id === updatedTask.id) {
+        if (selectedTask && selectedTask.id === updatedTask.id) {
           setSelectedTask(updatedTask);
         }
       } else {
