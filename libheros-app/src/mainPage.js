@@ -190,7 +190,7 @@ function MainPage() {
   };
 
   const handleCompleteTask = async (task) => {
-    const updatedTask = { ...task, completed: !task.completed };
+    const updatedTask = { ...task, isCompleted: !task.isCompleted };
 
     try {
       const response = await axios.put(
@@ -316,20 +316,20 @@ function MainPage() {
               {tasks.length > 0 ? (
                 <ul>
                 {tasks
-                  .filter(task => !task.completed || showCompleted) // Show only incomplete or all based on toggle
+                  .filter(task => !task.isCompleted || showCompleted) // Show only incomplete or all based on toggle
                   .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
                   .map((task, index) => (
                     <Styles.TaskItem 
                       key={index} 
                       onClick={() => handleSelectTask(task, index)}
                       selected={selectedTaskIndex === index}>
-                      {task.shortDescription} - {formatDate(task.dueDate)} - {task.completed ? 'Completed' : 'Not Completed'}
+                      {task.shortDescription} - {formatDate(task.dueDate)} - {task.isCompleted ? 'Completed' : 'Not Completed'}
                       <Styles.Button onClick={(e) => {
                         e.stopPropagation();
                         handleCompleteTask(task, index);
                         }
                       }>
-                        {task.completed ? 'Mark as Incomplete' : 'Mark as Completed'}
+                        {task.isCompleted ? 'Mark as Incomplete' : 'Mark as Completed'}
                       </Styles.Button>
                     </Styles.TaskItem>
                   ))}
@@ -390,7 +390,7 @@ function MainPage() {
             <p><strong>Short Description:</strong> {selectedTask.shortDescription}</p>
             <p><strong>Long Description:</strong> {selectedTask.longDescription}</p>
             <p><strong>Due Date:</strong> {formatDate(selectedTask.dueDate)}</p>
-            <p><strong>Completed:</strong> {selectedTask.completed ? 'Yes' : 'No'}</p>
+            <p><strong>Completed:</strong> {selectedTask.isCompleted ? 'Yes' : 'No'}</p>
             {/* Delete Task Button */}
             <Styles.Button onClick={handleDeleteTask}>Delete Task</Styles.Button>
           </Styles.TaskDetails>
