@@ -169,3 +169,13 @@ export const DeleteTaskListButtonLeft = styled.button`
     color: #ff4d4d;
   }
 `;
+
+export const CompletedTasksSection = styled.div`
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #ccc;
+  h3 {
+    margin-bottom: 10px;
+    color: #666;
+  }
+`;

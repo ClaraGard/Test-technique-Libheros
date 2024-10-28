@@ -18,10 +18,8 @@ function MainPage() {
 
   const [taskLists, setTaskLists] = useState([]);
   const [selectedTaskList, setSelectedTaskList] = useState(null);
-  const [selectedTaskListIndex, setSelectedTaskListIndex] = useState(null); 
   const [tasks, setTasks] = useState([]); 
   const [selectedTask, setSelectedTask] = useState(null); 
-  const [selectedTaskIndex, setSelectedTaskIndex] = useState(null); 
 
   const [newTaskListName, setNewTaskListName] = useState(''); 
 
@@ -120,8 +118,8 @@ function MainPage() {
     }
   };
 
-  const handleSelectTaskList = async (list, index) => {
-    if (selectedTaskListIndex === index) return;
+  const handleSelectTaskList = async (list) => {
+    if (selectedTaskList && selectedTaskList.id === list.id) return;
 
     try {
       const response = await axios.get(`${backendUrl}/task/tasklist/${list.id}`, {
@@ -131,10 +129,8 @@ function MainPage() {
       });
       if (response.data.success) {
         setSelectedTaskList(list);
-        setSelectedTaskListIndex(index);
         setTasks(response.data.tasks);
         setSelectedTask(null);
-        setSelectedTaskIndex(null);
       } else {
         alert(response.data.message);
       }
@@ -143,10 +139,9 @@ function MainPage() {
     }
   };
 
-  const handleSelectTask = (task, index) => {
-    if (selectedTaskIndex === index) return;
+  const handleSelectTask = (task) => {
+    if (selectedTask && selectedTask.id === task.id) return;
     setSelectedTask(task);
-    setSelectedTaskIndex(index);
   };
 
   const handleAddTask = async (e) => {
@@ -237,7 +232,6 @@ function MainPage() {
         const updatedTasks = tasks.filter((task) => task.id !== selectedTask.id);
         setTasks(updatedTasks);
         setSelectedTask(null);
-        setSelectedTaskIndex(null);
       }else {
         alert(response.data.message);
       }
@@ -264,9 +258,7 @@ function MainPage() {
         setTaskLists(updatedTaskLists);
         
         setSelectedTaskList(null);
-        setSelectedTaskListIndex(null);
         setSelectedTask(null);
-        setSelectedTaskIndex(null);
         setTasks([]);
       }else {
         alert(response.data.message);
@@ -294,9 +286,7 @@ function MainPage() {
   
         if (selectedTaskList && selectedTaskList.id === taskListId) {
           setSelectedTaskList(null);
-          setSelectedTaskListIndex(null);
           setSelectedTask(null);
-          setSelectedTaskIndex(null);
           setTasks([]);
         }
       } else {
@@ -337,11 +327,11 @@ function MainPage() {
               />
               <Styles.Button onClick={handleAddTaskList}>Add Task List</Styles.Button>
               <ul>
-                {taskLists.map((list, index) => (
+                {taskLists.map((list) => (
                   <Styles.TaskList
-                    key={index}
-                    selected={selectedTaskListIndex === index}
-                    onClick={() => handleSelectTaskList(list, index)}
+                    key={list.id}
+                    selected={selectedTaskList && selectedTaskList.id === list.id}
+                    onClick={() => handleSelectTaskList(list)}
                   >
                   {list.name}
                   <Styles.DeleteTaskListButtonLeft onClick={(e) => {
@@ -366,17 +356,17 @@ function MainPage() {
               {tasks.length > 0 ? (
                 <ul>
                 {tasks
-                  .filter(task => !task.isCompleted || showCompleted) // Show only incomplete or all based on toggle
+                  .filter(task => !task.isCompleted) // Show only incomplete or all based on toggle
                   .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-                  .map((task, index) => (
+                  .map((task) => (
                     <Styles.TaskItem 
-                      key={index} 
-                      onClick={() => handleSelectTask(task, index)}
-                      selected={selectedTaskIndex === index}>
+                      key={task.id} 
+                      onClick={() => handleSelectTask(task)}
+                      selected={selectedTask && selectedTask.id === task.id}>
                       {task.shortDescription} - {formatDate(task.dueDate)} - {task.isCompleted ? 'Completed' : 'Not Completed'}
                       <Styles.Button onClick={(e) => {
                         e.stopPropagation();
-                        handleCompleteTask(task, index);
+                        handleCompleteTask(task);
                         }
                       }>
                         {task.isCompleted ? 'Mark as Incomplete' : 'Mark as Completed'}
@@ -431,6 +421,32 @@ function MainPage() {
               )}
             </>
           )}
+            {/* Completed Tasks Section */}
+            {showCompleted && tasks.some(task => task.isCompleted) && (
+              <Styles.CompletedTasksSection>
+                <h3>Completed Tasks</h3>
+                <ul>
+                  {tasks
+                    .filter(task => task.isCompleted) // Show only completed tasks here
+                    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                    .map((task) => (
+                      <Styles.TaskItem 
+                      key={task.id} 
+                      onClick={() => handleSelectTask(task)}
+                      selected={selectedTask && selectedTask.id === task.id}>
+                      {task.shortDescription} - {formatDate(task.dueDate)} - {task.isCompleted ? 'Completed' : 'Not Completed'}
+                      <Styles.Button onClick={(e) => {
+                        e.stopPropagation();
+                        handleCompleteTask(task);
+                        }
+                      }>
+                        {task.isCompleted ? 'Mark as Incomplete' : 'Mark as Completed'}
+                      </Styles.Button>
+                    </Styles.TaskItem>
+                    ))}
+                </ul>
+              </Styles.CompletedTasksSection>
+            )}
         </Styles.Content>
 
         {/* Right Sidebar: Task Details */}
