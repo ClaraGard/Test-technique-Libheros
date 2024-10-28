@@ -2,7 +2,7 @@ import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req } from 
 import { TaskService } from './task.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateTaskDto, UpdateTaskDto } from './task.dto';
-import { TaskResponse, TasksResponse } from './task.service'; // Import the response interfaces
+import { TaskResponse, TasksResponse } from './task.service';
 
 @Controller('task')
 @UseGuards(JwtAuthGuard)

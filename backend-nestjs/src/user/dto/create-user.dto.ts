@@ -5,9 +5,9 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
-  @MinLength(8) // Optional: ensure the password has a minimum length
+  @MinLength(8)
   password: string;
 
   @IsString()
-  name: string; // Add other fields as required
+  name: string;
 }

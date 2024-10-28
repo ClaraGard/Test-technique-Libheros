@@ -16,19 +16,19 @@ const formatDate = (dateString) => {
 function MainPage() {
   const [username, setUsername] = useState(null);
 
-  const [taskLists, setTaskLists] = useState([]); // To store the task lists
-  const [selectedTaskList, setSelectedTaskList] = useState(null); // To store the selected task list
-  const [selectedTaskListIndex, setSelectedTaskListIndex] = useState(null); // Track selected task by index
-  const [tasks, setTasks] = useState([]); // To store tasks for the selected list
-  const [selectedTask, setSelectedTask] = useState(null); // To store selected task details
-  const [selectedTaskIndex, setSelectedTaskIndex] = useState(null); // Track selected task by index
+  const [taskLists, setTaskLists] = useState([]);
+  const [selectedTaskList, setSelectedTaskList] = useState(null);
+  const [selectedTaskListIndex, setSelectedTaskListIndex] = useState(null); 
+  const [tasks, setTasks] = useState([]); 
+  const [selectedTask, setSelectedTask] = useState(null); 
+  const [selectedTaskIndex, setSelectedTaskIndex] = useState(null); 
 
-  const [newTaskListName, setNewTaskListName] = useState(''); // To store new task list name
+  const [newTaskListName, setNewTaskListName] = useState(''); 
 
   const [newTask, setNewTask] = useState({ shortDescription: '', longDescription: '', dueDate: '' }); 
   const [showTaskForm, setShowTaskForm] = useState(false); 
 
-  const [showCompleted, setShowCompleted] = useState(false); // To track if completed tasks are shown
+  const [showCompleted, setShowCompleted] = useState(false); 
 
   const navigate = useNavigate();
 
@@ -40,8 +40,8 @@ function MainPage() {
         },
       });
   
-      const data = response.data; // Axios automatically parses the response
-      setUsername(data.name); // Ensure 'name' exists in the response
+      const data = response.data;
+      setUsername(data.name);
     } catch (error) {
       console.error('Error fetching username:', error);
     }
@@ -68,25 +68,73 @@ function MainPage() {
     }
   }, [navigate]);
 
+  const fetchTaskLists = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/tasklist`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (response.data.success) {
+        setTaskLists(response.data.taskLists);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching task lists:", error);
+    }
+  }
+
   useEffect(() => {
     validateToken();
+    fetchTaskLists();
   }, [validateToken]);
 
-  const handleAddTaskList = () => {
-    if (newTaskListName) {
-      setTaskLists([...taskLists, { name: newTaskListName, tasks: [] }]);
-      setNewTaskListName(''); // Clear input
+  const handleAddTaskList = async () => {
+    if (!newTaskListName) return;
+  
+    try {
+      const response = await axios.post(
+        `${backendUrl}/tasklist`,
+        { name: newTaskListName },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      if (response.data.success) {
+        setTaskLists([...taskLists, response.data.taskList]);
+        setNewTaskListName('');
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error adding task list:", error);
     }
   };
 
-  const handleSelectTaskList = (list, index) => {
-    console.log(selectedTaskListIndex);
+  const handleSelectTaskList = async (list, index) => {
     if (selectedTaskListIndex === index) return;
-    setSelectedTaskList(list);
-    setSelectedTaskListIndex(index);
 
-    setTasks(list.tasks);
-    setSelectedTask(null);
+    try {
+      const response = await axios.get(`${backendUrl}/task/tasklist/${list.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (response.data.success) {
+        setSelectedTaskList(list);
+        setSelectedTaskListIndex(index);
+        setTasks(response.data.tasks);
+        setSelectedTask(null);
+        setSelectedTaskIndex(null);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
   };
 
   const handleSelectTask = (task, index) => {
@@ -95,13 +143,14 @@ function MainPage() {
     setSelectedTaskIndex(index);
   };
 
-  const handleAddTask = (e) => {
+  const handleAddTask = async (e) => {
     e.preventDefault();
+    if (!selectedTaskList) return;
+
     const today = new Date();
     const dueDate = new Date(newTask.dueDate);
     const maxAllowedDate = new Date();
     maxAllowedDate.setFullYear(today.getFullYear() + 30);
-    
     if (dueDate > maxAllowedDate) {
       alert('Due date cannot be more than 30 years in the future!');
       return;
@@ -111,67 +160,113 @@ function MainPage() {
       alert('Due date cannot be in the past!');
       return;
     }
-    if (selectedTaskList) {
-      const updatedTasks = [...tasks, newTask]; // Spread to append task, not overwrite
-      const updatedTaskList = { ...selectedTaskList, tasks: [...selectedTaskList.tasks, newTask] };
-  
-      setTaskLists(taskLists.map(list =>
-        list === selectedTaskList ? updatedTaskList : list
-      ));
-      setTasks(updatedTasks);
-      setNewTask({ shortDescription: '', longDescription: '', dueDate: '' });
-      setShowTaskForm(false);
+
+    try {
+      const response = await axios.post(
+        `${backendUrl}/task`,
+        {
+          shortDescription: newTask.shortDescription,
+          longDescription: newTask.longDescription,
+          dueDate: newTask.dueDate,
+          taskListId: selectedTaskList.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      if (response.data.success) {
+        const updatedTasks = [...tasks, response.data.task];
+        setTasks(updatedTasks);
+        setNewTask({ shortDescription: '', longDescription: '', dueDate: '' });
+        setShowTaskForm(false);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error adding task:", error);
     }
   };
 
-  const handleCompleteTask = (task) => {
+  const handleCompleteTask = async (task) => {
     const updatedTask = { ...task, completed: !task.completed };
-  
-    const updatedTasks = tasks.map((t) =>
-      t === task ? updatedTask : t
-    );
-  
-    const updatedTaskList = { ...selectedTaskList, tasks: updatedTasks };
-    setTaskLists(taskLists.map(list =>
-      list === selectedTaskList ? updatedTaskList : list
-    ));
-  
-    setTasks(updatedTasks);
-    };
-  
 
-  const handleDeleteTask = () => {
-    const confirmed = window.confirm("Are you sure you want to delete this task?");
-    if (confirmed) {
-      const updatedTasks = tasks.filter((task) => task !== selectedTask);
-      setTasks(updatedTasks);
-  
-      const updatedTaskList = { ...selectedTaskList, tasks: updatedTasks };
-      setTaskLists(taskLists.map(list =>
-        list === selectedTaskList ? updatedTaskList : list
-      ));
-      setSelectedTask(null);
-      setSelectedTaskIndex(null);
+    try {
+      const response = await axios.put(
+        `${backendUrl}/task/${task.id}`,
+        updatedTask,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        const updatedTasks = tasks.map((t) => (t.id === task.id ? response.data.task : t));
+        setTasks(updatedTasks); 
+        if (selectedTask.id === updatedTask.id) {
+          setSelectedTask(updatedTask);
+        }
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating task:", error);
     }
   };
+  
 
-  const handleDeleteTaskList = () => {
+  const handleDeleteTask = async () => {
+    const confirmed = window.confirm("Are you sure you want to delete this task?");
+    if (!confirmed) return;
+    try {
+      const response = await axios.delete(`${backendUrl}/task/${selectedTask.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (response.data.success) {
+        const updatedTasks = tasks.filter((task) => task.id !== selectedTask.id);
+        setTasks(updatedTasks);
+        setSelectedTask(null);
+        setSelectedTaskIndex(null);
+      }else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }    
+  };
+
+  const handleDeleteTaskList = async () => {
     if (!selectedTaskList) return; 
   
     const confirmed = window.confirm(
       `Are you sure you want to delete the task list "${selectedTaskList.name}" and all its tasks?`
     );
-  
-    if (confirmed) {
-      const updatedTaskLists = taskLists.filter((list) => list !== selectedTaskList);
-  
-      setTaskLists(updatedTaskLists);
-  
-      setSelectedTaskList(null);
-      setSelectedTaskListIndex(null);
-      setSelectedTaskIndex(null);
-      setSelectedTask(null);
-      setTasks([]);
+    if (!confirmed) return;
+    try {
+      const response = await axios.delete(`${backendUrl}/tasklist/${selectedTaskList.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (response.data.success) {
+        const updatedTaskLists = taskLists.filter(list => list.id !== selectedTaskList.id);
+        setTaskLists(updatedTaskLists);
+        
+        setSelectedTaskList(null);
+        setSelectedTaskListIndex(null);
+        setSelectedTask(null);
+        setSelectedTaskIndex(null);
+        setTasks([]);
+      }else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting task list:", error);
     }
   };
 
@@ -222,7 +317,7 @@ function MainPage() {
                 <ul>
                 {tasks
                   .filter(task => !task.completed || showCompleted) // Show only incomplete or all based on toggle
-                  .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)) // Sort tasks by due date
+                  .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
                   .map((task, index) => (
                     <Styles.TaskItem 
                       key={index} 

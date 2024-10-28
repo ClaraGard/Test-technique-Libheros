@@ -21,13 +21,12 @@ const PasswordValidator = ({ password, onPasswordChange, setValidation }) => {
       hasGoodLength: password.length >=8 && password.length <= 32
     };
     
-    // Update validation in parent component
     setValidation(validation);
   };
 
   const handleChange = (e) => {
     const newPassword = e.target.value;
-    onPasswordChange(newPassword); // Pass the password to parent component
+    onPasswordChange(newPassword);
     validatePassword(newPassword);
   };
 
