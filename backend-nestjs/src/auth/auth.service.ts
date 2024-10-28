@@ -23,8 +23,6 @@ export class AuthService {
       password: hashedPassword,
     });
     const token = this.generateToken(newUser);
-    /*newUser.token = token.access_token;
-    await this.usersService.updateToken(newUser.id, token.access_token);*/
     return { success: true, token: token.access_token }; 
   }
 
@@ -34,8 +32,6 @@ export class AuthService {
       return { success: false,  message: 'Incorrect credentials' };
     }
     const token = this.generateToken(user);
-    /*user.token = token.access_token;
-    await this.usersService.updateToken(user.id, token.access_token);*/
     return { success: true, token: token.access_token }; 
   }
 

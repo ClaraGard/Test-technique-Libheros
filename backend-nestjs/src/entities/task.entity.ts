@@ -15,6 +15,9 @@ export class Task {
   @Column({default: false})
   isCompleted: boolean
 
+  @Column({type:"date"})
+  dueDate: Date
+
   @Index()
   @ManyToOne(() => TaskList, tasklist => tasklist.tasks, { onDelete: 'CASCADE' })
   taskList: TaskList;
