@@ -11,8 +11,6 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('en-GB');
 };
 
-
-
 function MainPage() {
   const [username, setUsername] = useState(null);
 
@@ -356,7 +354,7 @@ function MainPage() {
               {tasks.length > 0 ? (
                 <ul>
                 {tasks
-                  .filter(task => !task.isCompleted) // Show only incomplete or all based on toggle
+                  .filter(task => !task.isCompleted)
                   .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
                   .map((task) => (
                     <Styles.TaskItem 
@@ -427,7 +425,7 @@ function MainPage() {
                 <h3>Completed Tasks</h3>
                 <ul>
                   {tasks
-                    .filter(task => task.isCompleted) // Show only completed tasks here
+                    .filter(task => task.isCompleted)
                     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
                     .map((task) => (
                       <Styles.TaskItem 
