@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, Index } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, Index, CreateDateColumn } from 'typeorm';
 import { TaskList } from './tasklist.entity';
 
 @Entity()
@@ -17,6 +17,9 @@ export class Task {
 
   @Column({type:"date"})
   dueDate: Date
+
+  @CreateDateColumn()
+  creationDate: Date
 
   @Index()
   @ManyToOne(() => TaskList, tasklist => tasklist.tasks, { onDelete: 'CASCADE' })

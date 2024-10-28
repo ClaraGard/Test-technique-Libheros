@@ -455,6 +455,7 @@ function MainPage() {
             <h3>Task Details</h3>
             <p><strong>Short Description:</strong> {selectedTask.shortDescription}</p>
             <p><strong>Long Description:</strong> {selectedTask.longDescription}</p>
+            <p><strong>Creation Date:</strong> {formatDate(selectedTask.creationDate)}</p>
             <p><strong>Due Date:</strong> {formatDate(selectedTask.dueDate)}</p>
             <p><strong>Completed:</strong> {selectedTask.isCompleted ? 'Yes' : 'No'}</p>
             {/* Delete Task Button */}
