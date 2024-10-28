@@ -31,18 +31,18 @@ export const Container = styled.div`
 `;
 
 export const Sidebar = styled.div`
-  width: ${(props) => (props.sidebarOpen ? '200px' : '20px')};
+  width: ${({ $sidebaropen }) => ($sidebaropen ? '200px' : '20px')};
   transition: width 0.3s ease;
   overflow: hidden;
   background-color: #f4f4f4;
-  padding: ${(props) => (props.sidebarOpen ? '10px' : '0')};
+  padding: ${({ $sidebaropen }) => ($sidebaropen ? '10px' : '0')};
   position: relative;
 `;
 
 export const ToggleButton = styled.button`
   position: absolute;
   top: 0px;
-  right: ${(props) => (props.sidebarOpen ? '0px' : '0px')};
+  right: 0px;
   width: 20px;
   height: 40px;
   background-color: #666;
@@ -51,7 +51,7 @@ export const ToggleButton = styled.button`
   cursor: pointer;
   z-index: 1;
   border-radius: 0 5px 5px 0;
-  transform: translateX(${(props) => (props.sidebarOpen ? '0' : '0')});
+  transform: translateX(0);
 `;
 
 export const Content = styled.div`

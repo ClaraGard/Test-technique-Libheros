@@ -311,10 +311,10 @@ function MainPage() {
 
       <Styles.Container>
         {/* Left Sidebar: Task Lists */}
-        <Styles.Sidebar sidebarOpen={sidebarOpen}>
-          <Styles.ToggleButton sidebarOpen={sidebarOpen} onClick={toggleSidebar}>
+        <Styles.Sidebar $sidebaropen={sidebarOpen}>
+        <Styles.ToggleButton onClick={toggleSidebar}>
             {sidebarOpen ? '<' : '>'}
-          </Styles.ToggleButton>
+        </Styles.ToggleButton>
           {sidebarOpen && (
             <>
               <h2>Task Lists</h2>
