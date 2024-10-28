@@ -30,7 +30,6 @@ export class TaskController {
   @Put(':taskId')
   async updateTask(@Param('taskId') taskId: string, @Body() updateTaskDto: UpdateTaskDto, @Req() req): Promise<TaskResponse> {
     const userId = req.user.id;
-    console.log("controller:", userId, taskId);
     return this.taskService.updateTask(+taskId, updateTaskDto, userId);
   }
 
