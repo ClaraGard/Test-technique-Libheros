@@ -1,6 +1,7 @@
-import { Controller, Get, Param, UseGuards, Req, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { TaskListService } from './tasklist.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreateTaskListDto } from './tasklist.dto';
 
 @Controller('tasklist')
 @UseGuards(JwtAuthGuard)
@@ -9,17 +10,21 @@ export class TaskListController {
 
   @Get()
   async getUserTaskLists(@Req() req) {
-    return this.taskListService.getTaskListsForUser(req.user.userId);
+    return this.taskListService.getTaskListsForUser(req.user.id);
   }
 
   @Get(':id')
   async getTaskListById(@Param('id') id: number, @Req() req) {
-    const taskList = await this.taskListService.getTaskListById(id);
+    return this.taskListService.getTaskListById(id, req.user.id);
+  }
 
-    if (taskList && taskList.user.id === req.user.userId) {
-      return taskList;
-    } else {
-      throw new NotFoundException('Task List not found or access denied');
-    }
+  @Post()
+  async createTaskList(@Body() createTaskListDto: CreateTaskListDto, @Req() req) {
+    return this.taskListService.createTaskList(createTaskListDto, req.user.id);
+  }
+
+  @Delete(':id')
+  async deleteTaskList(@Param('id') taskListId: number, @Req() req) {
+    return this.taskListService.deleteTaskList(taskListId, req.user.id);
   }
 }
