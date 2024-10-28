@@ -30,7 +30,13 @@ function MainPage() {
 
   const [showCompleted, setShowCompleted] = useState(false); 
 
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   const navigate = useNavigate();
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  }
 
   const fetchUsername = async () => {
     try {
@@ -286,26 +292,29 @@ function MainPage() {
 
       <Styles.Container>
         {/* Left Sidebar: Task Lists */}
-        <Styles.Sidebar>
-          <h2>Task Lists</h2>
-          <Styles.Input
-            type="text"
-            placeholder="New Task List"
-            value={newTaskListName}
-            onChange={(e) => setNewTaskListName(e.target.value)}
-          />
-          <Styles.Button onClick={handleAddTaskList}>Add Task List</Styles.Button>
-
-          <ul>
-            {taskLists.map((list, index) => (
-              <Styles.TaskList key={index} onClick={() => handleSelectTaskList(list, index)}
-              selected={selectedTaskListIndex === index}>
-                {list.name}
-              </Styles.TaskList>
-            ))}
-          </ul>
+        <Styles.Sidebar sidebarOpen={sidebarOpen}>
+          <Styles.ToggleButton sidebarOpen={sidebarOpen} onClick={toggleSidebar}>
+            {sidebarOpen ? '<' : '>'}
+          </Styles.ToggleButton>
+          {sidebarOpen && (
+            <>
+              <h2>Task Lists</h2>
+              <Styles.Input
+                type="text"
+                placeholder="New Task List"
+                onChange={(e) => setNewTaskListName(e.target.value)}
+              />
+              <Styles.Button onClick={handleAddTaskList}>Add Task List</Styles.Button>
+              <ul>
+                {taskLists.map((list, index) => (
+                  <Styles.TaskList key={index} onClick={() => handleSelectTaskList(list, index)}>
+                    {list.name}
+                  </Styles.TaskList>
+                ))}
+              </ul>
+            </>
+          )}
         </Styles.Sidebar>
-
         {/* Main Content: Task List Tasks */}
         <Styles.Content>
           <h2>{selectedTaskList ? selectedTaskList.name : 'Select a Task List'}</h2>
